@@ -19,9 +19,10 @@ import org.json.JSONObject
 import com.android.volley.Request
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.Response
+import com.google.gson.Gson
 
 
-class MenuApiClient(private val context: Context) {
+class Entreeactivity(private val context: Context) {
     private val TAG = "MenuApiClient"
     private val url = "http://test.api.catering.bluecodegames.com/menu"
     private val idShop = "1"
@@ -36,20 +37,30 @@ class MenuApiClient(private val context: Context) {
         }
 
         val jsonObjectRequest = JsonObjectRequest(
-            Request.Method.POST,
+            com.android.volley.Request.Method.POST,
             url,
             jsonObject,
-            Response.Listener { response ->
+            { response ->
                 // Traitement de la réponse JSON
                 listener.onMenuItemsReceived(response)
+
+                // Filtrer les éléments selon la catégorie "entrée" et les afficher dans la console
+                val filteredItems = filterItems(response)
+                filteredItems.forEach { item -> println("Nom: ${item.name}") }
             },
-            Response.ErrorListener { error ->
+            { error ->
                 Log.e(TAG, "Erreur lors de la récupération du menu : ${error.message}")
                 listener.onError(error)
             }
         )
 
         requestQueue.add(jsonObjectRequest)
+    }
+
+    private fun filterItems(response: JSONObject): List<MenuItem> {
+        // Ici, vous devez implémenter votre logique de filtrage en fonction de la structure de votre JSON
+        // Pour cet exemple, je vais simplement renvoyer une liste vide
+        return emptyList()
     }
 
     interface MenuListener {
@@ -73,3 +84,22 @@ fun GreetingPreview2() {
         Greeting2("Android")
     }
 }
+
+data class MenuItem(val category: String, val name: String)
+
+data class Menu(val menu: List<MenuItem>)
+
+
+
+// Votre JSON
+val json = "{ \"menu\": [ { \"category\": \"entrée\", \"name\": \"Salade\" }, { \"category\": \"plat\", \"name\": \"Steak\" }, { \"category\": \"dessert\", \"name\": \"Gâteau\" } ] }"
+
+// Désérialisation du JSON en objets Java à l'aide de GSON
+val menu = Gson().fromJson(json, Menu::class.java)
+
+// Filtrer les éléments selon la catégorie sélectionnée (par exemple, "entrée")
+val filteredItems = menu.menu.filter { it.category == "entrée" }
+
+// Afficher les éléments filtrés
+
+
